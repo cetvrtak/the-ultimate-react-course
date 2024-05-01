@@ -4,12 +4,12 @@ import './index.css';
 
 function App() {
     const skillList = [
-        { title: 'HTML 💪', color: 'lightblue' },
-        { title: 'CSS 💪', color: 'orange' },
-        { title: 'JavaScript 💪', color: 'red' },
-        { title: 'Vue 👋', color: 'aquamarine' },
-        { title: 'React 🐣', color: 'olive' },
-        { title: 'Git 🦸‍♂️', color: 'yellow' },
+        { skill: 'HTML', level: 'advanced', color: 'lightblue' },
+        { skill: 'CSS', level: 'advanced', color: 'orange' },
+        { skill: 'JavaScript', level: 'advanced', color: 'red' },
+        { skill: 'Vue', level: 'familiar', color: 'aquamarine' },
+        { skill: 'React', level: 'beginner', color: 'olive' },
+        { skill: 'Git', level: 'superhero', color: 'yellow' },
     ];
 
     return (
@@ -39,18 +39,24 @@ function Intro() {
     )
 }
 
-function SkillList(props) {
+function SkillList({ skillList }) {
     return (
         <div className='skill-list'>
-            {props.skillList.map(({ title, color }, index) => (
-                <Skill title={title} bgColor={color} key={index} />
+            {skillList.map(({ skill, level, color }, index) => (
+                <Skill skill={skill} level={level} bgColor={color} key={index} />
             ))}
         </div>
     );
 }
 
-function Skill(props) {
-    return <div style={{ backgroundColor: props.bgColor }} className='skill'>{props.title}</div>
+function Skill({ skill, level, bgColor }) {
+    const levelMap = {
+        'beginner': '🐣',
+        'familiar': '👋',
+        'advanced': '💪',
+        'superhero': '🦸‍♂️'
+    }
+    return <div style={{ backgroundColor: bgColor }} className='skill'>{skill} {levelMap[level]}</div>
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
