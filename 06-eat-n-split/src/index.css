@@ -31,10 +31,12 @@ body {
 
 .app {
   min-height: 66vh;
-  display: grid;
-  grid-template-columns: 34fr 44fr;
-  column-gap: 4rem;
-  align-items: start;
+  padding: 40px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 40px;
 }
 
 .button {
