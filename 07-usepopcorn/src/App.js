@@ -1,51 +1,51 @@
 import { useEffect, useState } from "react";
 
-const tempMovieData = [
-  {
-    imdbID: "tt0137523",
-    Title: "Fight Club",
-    Year: "1999",
-    Poster:
-      "https://m.media-amazon.com/images/I/71L0N7Ql0iL._AC_SY879_@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt1446714",
-    Title: "Prometheus",
-    Year: "2012",
-    Poster:
-      "https://m.media-amazon.com/images/I/81Xk9a-6QEL.__AC_SX300_SY300_QL70_ML2_@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt0278781",
-    Title: "Andromeda Nebula",
-    Year: "1967",
-    Poster:
-      "https://m.media-amazon.com/images/I/515COd2Y0QL._SX466_@._V1_SX300.jpg",
-  },
-];
+// const tempMovieData = [
+// {
+//   imdbID: "tt0137523",
+//   Title: "Fight Club",
+//   Year: "1999",
+//   Poster:
+//     "https://m.media-amazon.com/images/I/71L0N7Ql0iL._AC_SY879_@._V1_SX300.jpg",
+// },
+// {
+//   imdbID: "tt1446714",
+//   Title: "Prometheus",
+//   Year: "2012",
+//   Poster:
+//     "https://m.media-amazon.com/images/I/81Xk9a-6QEL.__AC_SX300_SY300_QL70_ML2_@._V1_SX300.jpg",
+// },
+// {
+//   imdbID: "tt0278781",
+//   Title: "Andromeda Nebula",
+//   Year: "1967",
+//   Poster:
+//     "https://m.media-amazon.com/images/I/515COd2Y0QL._SX466_@._V1_SX300.jpg",
+// },
+// ];
 
-const tempWatchedData = [
-  {
-    imdbID: "tt0137523",
-    Title: "Fight Club",
-    Year: "1999",
-    Poster:
-      "https://m.media-amazon.com/images/I/71L0N7Ql0iL._AC_SY879_@._V1_SX300.jpg",
-    runtime: 239,
-    imdbRating: 8.8,
-    userRating: 10,
-  },
-  {
-    imdbID: "tt1446714",
-    Title: "Prometheus",
-    Year: "2012",
-    Poster:
-      "https://m.media-amazon.com/images/I/81Xk9a-6QEL.__AC_SX300_SY300_QL70_ML2_@._V1_SX300.jpg",
-    runtime: 224,
-    imdbRating: 7.0,
-    userRating: 10,
-  },
-];
+// const tempWatchedData = [
+// {
+//   imdbID: "tt0137523",
+//   Title: "Fight Club",
+//   Year: "1999",
+//   Poster:
+//     "https://m.media-amazon.com/images/I/71L0N7Ql0iL._AC_SY879_@._V1_SX300.jpg",
+//   runtime: 239,
+//   imdbRating: 8.8,
+//   userRating: 10,
+// },
+// {
+//   imdbID: "tt1446714",
+//   Title: "Prometheus",
+//   Year: "2012",
+//   Poster:
+//     "https://m.media-amazon.com/images/I/81Xk9a-6QEL.__AC_SX300_SY300_QL70_ML2_@._V1_SX300.jpg",
+//   runtime: 224,
+//   imdbRating: 7.0,
+//   userRating: 10,
+// },
+// ];
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -53,24 +53,34 @@ const average = (arr) =>
 const KEY = '60619ec4'
 
 export default function App() {
+  const [query, setQuery] = useState('eternal sunshine of the spotless mind');
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [selectedId, setSelectedId] = useState(null)
 
-  const query = 'eternal sunshine of the spotless mind'
+  function handleSelectMovie(id) {
+    setSelectedId((selectedId) => id === selectedId ? null : id)
+  }
+
+  function handleCloseMovie() {
+    setSelectedId(null)
+  }
 
   useEffect(function () {
     async function fetchMovies() {
       try {
         setIsLoading(true)
+        setError('')
+
         const res = await fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=${query}`)
 
         if (!res.ok) throw new Error("Failed to fetch movies")
 
         const data = await res.json()
         if (data.Response === 'False') {
-          throw new Error(data.Message)
+          throw new Error(data.Error)
         }
 
         setMovies(data.Search)
@@ -80,13 +90,20 @@ export default function App() {
         setIsLoading(false)
       }
     }
+
+    if (query.length < 5) {
+      setMovies([])
+      setError('')
+      return
+    }
+
     fetchMovies()
-  }, [])
+  }, [query])
 
   return (
     <>
       <NavBar>
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
 
@@ -95,13 +112,18 @@ export default function App() {
 
         <Box>
           {isLoading && <Loader />}
-          {!isLoading && !error && <MovieList movies={movies} />}
+          {!isLoading && !error && <MovieList movies={movies} onSelectMovie={handleSelectMovie} />}
           {error && <ErrorMessage message={error} />}
         </Box>
 
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMoviesList watched={watched} />
+          {
+            selectedId ? <MovieDetails selectedId={selectedId} onCloseMovie={handleCloseMovie} /> :
+              <>
+                <WatchedSummary watched={watched} />
+                <WatchedMoviesList watched={watched} />
+              </>
+          }
         </Box>
       </Main>
     </>
@@ -136,9 +158,7 @@ function Logo() {
   )
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
-
+function Search({ query, setQuery }) {
   return (
     <input
       className="search"
@@ -209,17 +229,17 @@ function Box({ children, element }) {
 }
 */
 
-function MovieList({ movies }) {
+function MovieList({ movies, onSelectMovie }) {
   return (
-    <ul className="list">
-      {movies?.map((movie) => <Movie movie={movie} key={movie.imdbID} />)}
+    <ul className="list list-movies">
+      {movies?.map((movie) => <Movie movie={movie} key={movie.imdbID} onSelectMovie={onSelectMovie} />)}
     </ul>
   )
 }
 
-function Movie({ movie }) {
+function Movie({ movie, onSelectMovie }) {
   return (
-    <li>
+    <li onClick={() => onSelectMovie(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -229,6 +249,15 @@ function Movie({ movie }) {
         </p>
       </div>
     </li>
+  )
+}
+
+function MovieDetails({ selectedId, onCloseMovie }) {
+  return (
+    <div className="details">
+      <button className="btn-back" onClick={onCloseMovie}>&larr;</button>
+      {selectedId}
+    </div>
   )
 }
 
