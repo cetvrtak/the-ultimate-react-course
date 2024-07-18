@@ -257,3 +257,30 @@ progress {
   font-size: inherit;
   padding: 0.8rem;
 }
+
+@media screen and (max-width: 768px) {
+  html {
+    font-size: 50%;
+  }
+  .app-header,
+  .main {
+    width: 80%;
+  }
+  .app-header {
+    justify-content: center;
+    gap: 8px;
+  }
+  img {
+    width: 8rem;
+  }
+  h1 {
+    font-size: 3rem;
+  }
+}
+
+@media screen and (max-width: 425px) {
+  .app-header,
+  .main {
+    width: 100%;
+  }
+}
